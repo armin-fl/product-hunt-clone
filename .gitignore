@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyd
+*.pyo
+*.so
+.Python
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Django
+*.sqlite3
+staticfiles/
+media/
+
+# Env files (keep dev/prod env tracked)
+.env
+.env.*
+*.env
+!Environment/Development/dev.env
+!Environment/Production/prod.env
+
+# Tests / tooling
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Docker volumes
+n8n_data/
+postgres_data/

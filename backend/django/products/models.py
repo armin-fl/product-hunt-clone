@@ -10,6 +10,7 @@ class Maker(models.Model):
 
 
 class Product(models.Model):
+    # Core Product Hunt fields; keep raw_payload for replay/debugging when the API shape changes.
     ph_id = models.CharField(max_length=32, unique=True)
     name = models.CharField(max_length=200)
     slug = models.SlugField(max_length=200, db_index=True)
@@ -23,11 +24,8 @@ class Product(models.Model):
     created_at = models.DateTimeField(db_index=True)
     featured_at = models.DateTimeField(null=True, blank=True, db_index=True)
     thumbnail_url = models.URLField(max_length=500, blank=True)
-    submitted_by_name = models.CharField(max_length=150, blank=True)
-    submitted_by_username = models.CharField(max_length=150, blank=True)
     fetched_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    raw_payload = models.JSONField(blank=True, null=True)
+    raw_payload = models.JSONField(blank=True, null=True)  # full source payload from Product Hunt
 
     makers = models.ManyToManyField(Maker, through='ProductMaker', related_name='products')
 

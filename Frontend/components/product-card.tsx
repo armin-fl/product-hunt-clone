@@ -18,6 +18,7 @@ export function ProductCard({ product }: { product: Product }) {
               alt={product.name}
               fill
               sizes="56px"
+              unoptimized
               className="object-cover"
             />
           ) : null}

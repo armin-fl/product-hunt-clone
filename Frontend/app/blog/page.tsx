@@ -1,7 +1,9 @@
 import { BlogCard } from "@/components/blog-card";
-import { blogPosts } from "@/lib/blog";
+import { getBlogPosts } from "@/lib/blog";
 
-export default function BlogPage() {
+export default async function BlogPage() {
+  const blogPosts = await getBlogPosts();
+
   return (
     <div className="space-y-10">
       <section className="space-y-2">
@@ -11,11 +13,15 @@ export default function BlogPage() {
           Product storytelling, discovery strategy, and the craft behind the feed.
         </p>
       </section>
-      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-        {blogPosts.map((post) => (
-          <BlogCard key={post.slug} post={post} />
-        ))}
-      </div>
+      {blogPosts.length ? (
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          {blogPosts.map((post) => (
+            <BlogCard key={post.slug} post={post} />
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">No blog posts published yet.</p>
+      )}
     </div>
   );
 }

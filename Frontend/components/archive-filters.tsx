@@ -34,7 +34,7 @@ export function ArchiveFilters() {
       params.set("reviews_rating", rating.toString());
     }
     const query = params.toString();
-    router.push(query ? `/archive?${query}` : "/archive");
+    router.push(query ? `/products?${query}` : "/products");
   };
 
   const clearFilters = () => {
@@ -42,7 +42,7 @@ export function ArchiveFilters() {
     setMaxVotes("");
     setSearch("");
     setRating(0);
-    router.push("/archive");
+    router.push("/products");
   };
 
   return (

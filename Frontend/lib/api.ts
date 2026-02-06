@@ -1,7 +1,6 @@
 import { Product } from "./types";
 
-const API_BASE_URL = process.env.API_BASE_URL ?? "http://localhost:8000";
-const PRODUCTS_ENDPOINT = `${API_BASE_URL}/api/products/`;
+const SERVER_API_BASE_URL = process.env.API_BASE_URL ?? "http://localhost:8000";
 
 type ProductFilters = {
   min_votes?: number | string;
@@ -10,58 +9,19 @@ type ProductFilters = {
   max_rating?: number | string;
   search?: string;
   ordering?: string;
+  page?: number | string;
 };
 
-const SAMPLE_PRODUCTS: Product[] = [
-  {
-    ph_id: "1069501",
-    name: "Atoms",
-    slug: "atoms-5",
-    tagline: "Turn your ideas into products that sell",
-    description:
-      "Atoms is a vibe business team that turns your ideas into business. It researches your market, designs the product, builds frontend and backend, connects auth and payments, and ships a live app you can charge for.",
-    url: "https://www.producthunt.com/products/atoms-5",
-    website: "https://www.producthunt.com/products/atoms-5",
-    votes_count: 500,
-    reviews_count: 0,
-    reviews_rating: 0,
-    thumbnail_url: "https://ph-files.imgix.net/5a87efce-da3a-41a5-b945-d6a36eaa863d.webp?auto=format",
-    created_at: "2026-02-03T08:01:00Z",
-    featured_at: "2026-02-03T08:01:00Z"
-  },
-  {
-    ph_id: "1069502",
-    name: "Hugo",
-    slug: "hugo-ai-agent",
-    tagline: "The AI Agent that doesn't charge 1$ per support ticket",
-    description:
-      "Hugo is an AI agent for modern support teams. Automate answers, surface knowledge instantly, and keep customers happy without per-ticket pricing.",
-    url: "https://www.producthunt.com/products/hugo",
-    website: "https://www.producthunt.com/products/hugo",
-    votes_count: 467,
-    reviews_count: 18,
-    reviews_rating: 4.75,
-    thumbnail_url: "https://ph-files.imgix.net/01f9324c-b316-4246-a5a0-64b965835af5.png?auto=format",
-    created_at: "2026-02-03T10:10:00Z",
-    featured_at: "2026-02-03T08:01:00Z"
-  },
-  {
-    ph_id: "1069503",
-    name: "findable.",
-    slug: "findable",
-    tagline: "Free marketing optimization for ChatGPT, Google AI",
-    description:
-      "Findable helps products get discovered in modern AI search. Optimize your positioning for LLMs, analyze visibility, and improve relevance.",
-    url: "https://www.producthunt.com/products/findable",
-    website: "https://www.producthunt.com/products/findable",
-    votes_count: 400,
-    reviews_count: 12,
-    reviews_rating: 5,
-    thumbnail_url: "https://ph-files.imgix.net/b66aa46f-3dce-4b1c-9cc7-2570b88f624d.png?auto=format",
-    created_at: "2026-02-02T07:20:00Z",
-    featured_at: "2026-02-02T07:20:00Z"
-  }
-];
+type PaginatedResponse<T> = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+};
+
+function logApiError(message: string, error: unknown) {
+  console.error(`[products] ${message}`, error);
+}
 
 function buildParams(filters: ProductFilters) {
   const params = new URLSearchParams();
@@ -73,23 +33,58 @@ function buildParams(filters: ProductFilters) {
   return params;
 }
 
-export async function getProducts(filters: ProductFilters = {}): Promise<Product[]> {
-  const params = buildParams(filters);
-  const url = params.toString() ? `${PRODUCTS_ENDPOINT}?${params}` : PRODUCTS_ENDPOINT;
+function getApiBaseUrl() {
+  return typeof window === "undefined" ? SERVER_API_BASE_URL : "";
+}
 
-  try {
-    const res = await fetch(url, { next: { revalidate: 60 } });
-    if (!res.ok) {
-      throw new Error(`API error: ${res.status}`);
-    }
-    const data = await res.json();
-    return Array.isArray(data) ? data : data.results ?? [];
-  } catch {
-    return SAMPLE_PRODUCTS;
-  }
+function buildProductsUrl(filters: ProductFilters) {
+  const baseUrl = getApiBaseUrl();
+  const params = buildParams(filters);
+  const endpoint = `${baseUrl}/api/products/`;
+  return params.toString() ? `${endpoint}?${params}` : endpoint;
+}
+
+export async function getProducts(filters: ProductFilters = {}): Promise<Product[]> {
+  const page = await getProductsPage(filters);
+  return page.results;
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
   const results = await getProducts({ search: slug });
   return results.find((item) => item.slug === slug) ?? null;
+}
+
+function getFetchOptions() {
+  return typeof window === "undefined" ? { next: { revalidate: 60 } } : undefined;
+}
+
+export async function getProductsPage(
+  filters: ProductFilters = {}
+): Promise<PaginatedResponse<Product>> {
+  const url = buildProductsUrl(filters);
+
+  try {
+    const res = await fetch(url, getFetchOptions());
+    if (!res.ok) {
+      throw new Error(`API error: ${res.status}`);
+    }
+    const data = await res.json();
+    if (Array.isArray(data)) {
+      return {
+        count: data.length,
+        next: null,
+        previous: null,
+        results: data
+      };
+    }
+    return {
+      count: data.count ?? data.results?.length ?? 0,
+      next: data.next ?? null,
+      previous: data.previous ?? null,
+      results: data.results ?? []
+    };
+  } catch (error) {
+    logApiError(`Failed to fetch products from ${url}`, error);
+    return { count: 0, next: null, previous: null, results: [] };
+  }
 }

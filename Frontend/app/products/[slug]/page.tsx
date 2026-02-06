@@ -8,8 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getProductBySlug } from "@/lib/api";
 
-export default async function ProductDetailPage({ params }: { params: { slug: string } }) {
-  const product = await getProductBySlug(params.slug);
+export default async function ProductDetailPage({
+  params
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const product = await getProductBySlug(slug);
 
   if (!product) {
     notFound();
@@ -27,6 +32,7 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
                   alt={product.name}
                   fill
                   sizes="80px"
+                  unoptimized
                   className="object-cover"
                 />
               ) : null}
@@ -70,7 +76,7 @@ export default async function ProductDetailPage({ params }: { params: { slug: st
             <div className="text-sm text-muted-foreground">Slug: {product.slug}</div>
           </div>
           <Button className="mt-6" asChild>
-            <Link href="/archive">Back to archive</Link>
+            <Link href="/products">Back to products</Link>
           </Button>
         </Card>
       </section>

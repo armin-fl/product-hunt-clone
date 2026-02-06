@@ -1,51 +1,46 @@
+const API_BASE_URL = process.env.API_BASE_URL ?? "http://localhost:8000";
+const BLOG_ENDPOINT = `${API_BASE_URL}/api/blog-posts/`;
+
 export type BlogPost = {
   slug: string;
   title: string;
   excerpt: string;
-  date: string;
-  readTime: string;
   content: string[];
+  read_time: string;
+  published_at: string;
 };
 
-export const blogPosts: BlogPost[] = [
-  {
-    slug: "building-a-daily-launch-feed",
-    title: "Building a Daily Launch Feed That People Actually Use",
-    excerpt: "Lessons from Product Hunt-style discovery: clarity, tempo, and trust signals.",
-    date: "2026-02-02",
-    readTime: "6 min read",
-    content: [
-      "A launch feed is more than a list. It's a rhythm. If the rhythm is off, the community goes quiet.",
-      "We obsessed over grouping by day, surfacing momentum, and keeping scans effortless. That means strong hierarchy, predictable layouts, and consistent actions.",
-      "If you make it easy to compare and vote, you earn daily visits. Make it noisy, and you lose the feed." 
-    ]
-  },
-  {
-    slug: "designing-for-product-teams",
-    title: "Designing for Product Teams, Not Just Users",
-    excerpt: "How thoughtful UX reduces internal ops friction while delighting your audience.",
-    date: "2026-01-28",
-    readTime: "5 min read",
-    content: [
-      "We designed the backend-aware filters to mirror what teams actually need to curate and analyze launches.",
-      "The archive is the product ops cockpit. Treat it like one: fast scan, precise control, zero noise.",
-      "Small interface affordances create big operational wins." 
-    ]
-  },
-  {
-    slug: "theme-toggles-that-feel-premium",
-    title: "Theme Toggles That Feel Premium",
-    excerpt: "Dark mode isn't just a switch. It's a brand decision.",
-    date: "2026-01-20",
-    readTime: "4 min read",
-    content: [
-      "Color and contrast shape perception. We chose warm light surfaces and moody dark surfaces to keep the product feed calm.",
-      "The toggle needs to be immediate, reliable, and tasteful. No flashy gimmicks, just smooth control.",
-      "If your theme toggle doesn't feel premium, the rest of the product won't either." 
-    ]
-  }
-];
+function logBlogError(message: string, error: unknown) {
+  console.error(`[blog] ${message}`, error);
+}
 
-export function getBlogPost(slug: string) {
-  return blogPosts.find((post) => post.slug === slug) ?? null;
+export async function getBlogPosts(): Promise<BlogPost[]> {
+  try {
+    const res = await fetch(BLOG_ENDPOINT, { next: { revalidate: 60 } });
+    if (!res.ok) {
+      throw new Error(`API error: ${res.status}`);
+    }
+    const data = await res.json();
+    return Array.isArray(data) ? data : data.results ?? [];
+  } catch (error) {
+    logBlogError(`Failed to fetch blog posts from ${BLOG_ENDPOINT}`, error);
+    return [];
+  }
+}
+
+export async function getBlogPostBySlug(slug: string): Promise<BlogPost | null> {
+  const url = `${BLOG_ENDPOINT}${slug}/`;
+  try {
+    const res = await fetch(url, { next: { revalidate: 60 } });
+    if (res.status === 404) {
+      return null;
+    }
+    if (!res.ok) {
+      throw new Error(`API error: ${res.status}`);
+    }
+    return await res.json();
+  } catch (error) {
+    logBlogError(`Failed to fetch blog post ${slug}`, error);
+    return null;
+  }
 }

@@ -26,7 +26,7 @@ export default async function HomePage() {
             </p>
             <div className="flex flex-wrap items-center gap-3">
               <Button asChild size="lg">
-                <Link href="/archive">Browse archive</Link>
+                <Link href="/products">Browse products</Link>
               </Button>
               <Button variant="outline" size="lg" asChild>
                 <Link href="/about">How it works</Link>
@@ -36,17 +36,21 @@ export default async function HomePage() {
           <div className="relative rounded-3xl border border-border bg-card p-6 shadow-glow">
             <p className="text-sm font-semibold text-muted-foreground">Today&apos;s momentum</p>
             <div className="mt-4 space-y-4">
-              {products.slice(0, 3).map((product) => (
-                <div key={product.ph_id} className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-semibold">{product.name}</p>
-                    <p className="text-xs text-muted-foreground">{product.tagline}</p>
+              {products.length ? (
+                products.slice(0, 3).map((product) => (
+                  <div key={product.ph_id} className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold">{product.name}</p>
+                      <p className="text-xs text-muted-foreground">{product.tagline}</p>
+                    </div>
+                    <span className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold">
+                      {product.votes_count} votes
+                    </span>
                   </div>
-                  <span className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold">
-                    {product.votes_count} votes
-                  </span>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">No launches yet.</p>
+              )}
             </div>
           </div>
         </div>

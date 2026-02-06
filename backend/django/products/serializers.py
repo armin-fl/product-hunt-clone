@@ -43,13 +43,10 @@ class ProductSerializer(serializers.ModelSerializer):
             'reviews_count',
             'reviews_rating',
             'thumbnail_url',
-            'submitted_by_name',
-            'submitted_by_username',
             'media',
             'makers',
             'product_links',
             'fetched_at',
-            'updated_at',
         )
 
 
@@ -120,8 +117,6 @@ class ProductIngestSerializer(serializers.Serializer):
                 'reviews_count': validated_data.get('reviewsCount', 0),
                 'reviews_rating': validated_data.get('reviewsRating', 0),
                 'thumbnail_url': thumbnail.get('url', ''),
-                'submitted_by_name': user.get('name', ''),
-                'submitted_by_username': user.get('username', ''),
                 'raw_payload': self.context.get('raw_payload'),
             },
         )

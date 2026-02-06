@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 
 const navItems = [
   { href: "/", label: "Home" },
-  { href: "/archive", label: "Archive" },
+  { href: "/products", label: "Product" },
   { href: "/blog", label: "Blog" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" }
@@ -31,7 +31,7 @@ export default function SiteHeader() {
         </nav>
         <div className="flex items-center gap-3">
           <Button variant="outline" size="sm" asChild>
-            <Link href="/archive">Explore</Link>
+            <Link href="/products">Explore</Link>
           </Button>
           <ThemeToggle />
         </div>

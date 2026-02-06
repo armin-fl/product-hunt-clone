@@ -35,7 +35,7 @@ htmlcov/
 
 # Node
 node_modules/
-
+.next
 # Editor / OS
 .DS_Store
 Thumbs.db

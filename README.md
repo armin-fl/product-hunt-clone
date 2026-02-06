@@ -8,7 +8,7 @@
   - `clerk/` Clerk docs/placeholder
 - `Environment/Development/` dev docker-compose + env
 - `Environment/Production/` prod docker-compose + env
-- `Frontend/` (empty for now)
+- `Frontend/` Next.js 16 frontend
 
 ## Quick Start (dev)
 1. Update `Environment/Development/dev.env`.
@@ -60,3 +60,18 @@ The ingest endpoint requires auth (Bearer token). List endpoints are public by d
 2. Optional: map/transform fields to match the ingest schema.
 3. HTTP Request node: POST to `http://localhost:8000/api/ingest/producthunt/` with the JSON.
 4. Add the header `Authorization: Bearer <Clerk session token>` to the ingest request.
+
+## Frontend (Next.js)
+The frontend lives in `Frontend/`.
+
+```bash
+cd Frontend
+npm install
+npm run dev
+```
+
+Set API base in `Frontend/.env.local` (example in `Frontend/.env.local.example`):
+
+```
+API_BASE_URL=http://localhost:8000
+```

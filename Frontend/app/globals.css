@@ -1,0 +1,68 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 38 40% 98%;
+  --foreground: 222 24% 12%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 24% 12%;
+  --primary: 18 92% 55%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 196 62% 94%;
+  --secondary-foreground: 222 24% 16%;
+  --accent: 160 72% 40%;
+  --accent-foreground: 0 0% 100%;
+  --muted: 210 30% 94%;
+  --muted-foreground: 214 12% 42%;
+  --border: 210 20% 86%;
+  --input: 210 20% 86%;
+  --ring: 18 92% 55%;
+  --shadow: 24 30% 20%;
+}
+
+.dark {
+  --background: 222 26% 10%;
+  --foreground: 210 40% 96%;
+  --card: 222 28% 12%;
+  --card-foreground: 210 40% 96%;
+  --primary: 18 90% 60%;
+  --primary-foreground: 222 26% 10%;
+  --secondary: 215 28% 16%;
+  --secondary-foreground: 210 40% 96%;
+  --accent: 160 65% 45%;
+  --accent-foreground: 222 26% 10%;
+  --muted: 214 26% 18%;
+  --muted-foreground: 210 12% 70%;
+  --border: 214 20% 22%;
+  --input: 214 20% 22%;
+  --ring: 18 90% 60%;
+  --shadow: 210 30% 8%;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  @apply bg-background text-foreground antialiased;
+  background-image:
+    radial-gradient(1200px 600px at 90% -10%, hsl(var(--secondary)) 0%, transparent 60%),
+    radial-gradient(900px 500px at 10% -20%, hsl(var(--accent) / 0.18) 0%, transparent 55%);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  @apply font-display;
+  letter-spacing: -0.02em;
+}
+
+.glass {
+  background: hsl(var(--card) / 0.75);
+  backdrop-filter: blur(18px);
+  border: 1px solid hsl(var(--border));
+}

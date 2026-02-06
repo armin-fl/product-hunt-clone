@@ -11,7 +11,6 @@ type ProductsPageProps = {
     min_rating?: string | string[];
     reviews_rating?: string | string[];
     search?: string | string[];
-    page?: string | string[];
   }>;
 };
 

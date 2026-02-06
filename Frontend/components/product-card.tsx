@@ -2,7 +2,6 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { RatingStars } from "@/components/rating-stars";
-import { UpvoteButton } from "@/components/upvote-button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Product } from "@/lib/types";
@@ -38,7 +37,9 @@ export function ProductCard({ product }: { product: Product }) {
         <span className="text-xs text-muted-foreground">
           {new Date(product.featured_at ?? product.created_at).toLocaleDateString()}
         </span>
-        <UpvoteButton initialVotes={product.votes_count} compact />
+        <span className="text-xs font-semibold text-muted-foreground">
+          Product Hunt votes {product.votes_count}
+        </span>
       </div>
     </Card>
   );

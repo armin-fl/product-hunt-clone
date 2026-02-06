@@ -1,0 +1,570 @@
+{
+  "name": "My workflow 7",
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "headerAuth",
+        "endpoint": "https://api.producthunt.com/v2/api/graphql",
+        "query": "query GetPosts($after: DateTime, $before: DateTime, $cursor: String) {\n  posts(order: VOTES, postedAfter: $after, postedBefore: $before, first: 10, after: $cursor) {\n    edges {\n      node {\n        id\n        votesCount\n        createdAt\n        description\n        featuredAt\n        name\n        slug\n        tagline\n        url\n        website\n        reviewsCount\n        reviewsRating\n        thumbnail { url }\n        # Removed: media, makers, user, productLinks\n      }\n    }\n    pageInfo {\n      hasNextPage\n      endCursor\n    }\n  }\n}",
+        "variables": "={{\n  {\n    \"after\": $('Edit Fields').item.json.afterDate,\n    \"before\": $('Edit Fields').item.json.beforeDate,\n    \"cursor\": $json.cursor || null\n  }\n}}"
+      },
+      "type": "n8n-nodes-base.graphql",
+      "typeVersion": 1.1,
+      "position": [
+        -624,
+        432
+      ],
+      "id": "a36116d6-0755-47d5-b433-9b81d4e7d609",
+      "name": "GraphQL",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "JfjtnNPXP73RqDts",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "44ee3aaa-56d7-46ad-bd83-010fffd9d9d0",
+              "name": "cursor",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "f3e43f94-b8fc-4de7-aa97-4b5e4cc5a808",
+              "name": "afterDate",
+              "value": "={{ $today.minus({days: 2}).startOf('day').toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "1851ad10-132f-4bb0-9588-241d98cf58af",
+              "name": "beforeDate",
+              "value": "={{ $today.minus({days: 2}).endOf('day').toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -848,
+        432
+      ],
+      "id": "97f1822d-4c6f-4f8c-8f6e-81f42bf6f51f",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3b7833b4-dab3-459a-b8ec-39afc31fd397",
+              "leftValue": "={{ $json.continueLoop }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -176,
+        352
+      ],
+      "id": "db23e818-5bc7-4f1a-8fc2-1de7b1e5d2c0",
+      "name": "Check Loop"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a05bbb1a-8312-41c6-8a20-f23d685885b7",
+              "name": "cursor",
+              "value": "={{ $json.nextCursor }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        48,
+        448
+      ],
+      "id": "49a6cc7c-69f6-4a26-abba-bee12882cb33",
+      "name": "Update Cursor"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Access the static memory to store posts across loop iterations\nconst staticData = $getWorkflowStaticData('global');\n\n// Initialize the array if this is the first run of the loop\nif (!staticData.results) {\n  staticData.results = [];\n}\n\n// 1. Get data from GraphQL response\nconst response = items[0].json.data;\nconst posts = response.posts.edges.map(edge => edge.node);\n\n// 2. Add ALL posts to our master list (No filtering)\nstaticData.results.push(...posts);\n\n// 3. Check if there are more pages\nconst pageInfo = response.posts.pageInfo;\n\nif (pageInfo.hasNextPage) {\n  // If more pages, tell the IF node to continue\n  return {\n    json: {\n      continueLoop: true,\n      nextCursor: pageInfo.endCursor\n    }\n  };\n} else {\n  // If finished, return ALL the collected posts\n  const finalPosts = staticData.results;\n  staticData.results = []; // Clean up memory for next run\n  \n  // Return as individual items so the next node handles them easily\n  return finalPosts.map(post => ({ json: post }));\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        352
+      ],
+      "id": "38717106-1c07-486b-9d07-9fe2b4ef76b8",
+      "name": "Process & Aggregate"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1072,
+        432
+      ],
+      "id": "52382d6d-763f-4286-9b20-000897ae8878",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "products_product",
+          "mode": "list",
+          "cachedResultName": "products_product"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {
+            "id": 0,
+            "votes_count": 0,
+            "reviews_count": 0,
+            "reviews_rating": 0
+          },
+          "matchingColumns": [
+            "ph_id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ph_id",
+              "displayName": "ph_id",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "slug",
+              "displayName": "slug",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "tagline",
+              "displayName": "tagline",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "description",
+              "displayName": "description",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "url",
+              "displayName": "url",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "website",
+              "displayName": "website",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "votes_count",
+              "displayName": "votes_count",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "reviews_count",
+              "displayName": "reviews_count",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "reviews_rating",
+              "displayName": "reviews_rating",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "featured_at",
+              "displayName": "featured_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "thumbnail_url",
+              "displayName": "thumbnail_url",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "fetched_at",
+              "displayName": "fetched_at",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "raw_payload",
+              "displayName": "raw_payload",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "object",
+              "canBeUsedToMatch": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        496,
+        160
+      ],
+      "id": "62e06328-73de-4eea-b758-da3b0abf13f0",
+      "name": "Insert or update rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "OlsQ26VwXsKcBd1P",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "54f3504b-99a4-4bf1-8511-0d56bcdbec9e",
+              "name": "ph_id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "173f91a6-a494-4e8b-8b87-a8833220f5d0",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "834682c7-544b-4481-967a-5a8eb589c4ce",
+              "name": "slug",
+              "value": "={{ $json.slug }}",
+              "type": "string"
+            },
+            {
+              "id": "67335dd2-4185-4786-8fb1-db30e6976cc6",
+              "name": "tagline",
+              "value": "={{ $json.tagline }}",
+              "type": "string"
+            },
+            {
+              "id": "600a1ca4-5651-40a1-9d16-fdcb00565a82",
+              "name": "description",
+              "value": "={{ $json.description }}",
+              "type": "string"
+            },
+            {
+              "id": "b1c372bf-ec21-4c00-9bf6-12558a61bfb0",
+              "name": "url",
+              "value": "={{ $json.url }}",
+              "type": "string"
+            },
+            {
+              "id": "7c19e1b6-fdb3-426c-af81-164c20d69cde",
+              "name": "website",
+              "value": "={{ $json.website }}",
+              "type": "string"
+            },
+            {
+              "id": "d6c12c4f-0a70-4480-9d7b-e252a606651e",
+              "name": "votes_count",
+              "value": "={{ $json.votesCount }}",
+              "type": "number"
+            },
+            {
+              "id": "909d9e69-9e94-4cb9-9656-5d18753402b4",
+              "name": "reviews_count",
+              "value": "={{ $json.reviewsCount }}",
+              "type": "number"
+            },
+            {
+              "id": "311be35c-90f4-4055-9743-b6cfe2d82fa9",
+              "name": "reviews_rating",
+              "value": "={{ $json.reviewsRating }}",
+              "type": "number"
+            },
+            {
+              "id": "8b8920c2-ffdf-495a-b77e-e18620c60272",
+              "name": "created_at",
+              "value": "={{ $json.createdAt }}",
+              "type": "string"
+            },
+            {
+              "id": "3254410c-0c29-4250-ae58-3ef17ac597eb",
+              "name": "featured_at",
+              "value": "={{ $json.featuredAt }}",
+              "type": "string"
+            },
+            {
+              "id": "1189c2f1-b8cd-4cf9-9f5a-282941471739",
+              "name": "thumbnail_url",
+              "value": "={{ $json.thumbnail.url }}",
+              "type": "string"
+            },
+            {
+              "id": "98e64e5b-1857-4417-97ee-edd0b7e4390c",
+              "name": "fetched_at",
+              "value": "={{ new Date().toISOString() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        224,
+        160
+      ],
+      "id": "77343c57-893b-4d19-a18c-a610db82e6eb",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        272,
+        528
+      ],
+      "id": "9c3c22fa-a19f-4710-8e61-79082171e540",
+      "name": "Wait",
+      "webhookId": "c08b3ed9-de0c-41dc-86fe-505be4a7ec30"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "GraphQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GraphQL": {
+      "main": [
+        [
+          {
+            "node": "Process & Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process & Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Check Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Loop": {
+      "main": [
+        [
+          {
+            "node": "Update Cursor",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Cursor": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Insert or update rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "GraphQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "5cde2490-7d95-4a58-8cdd-c5f4da54117a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "7277c73d89dae1c4c0ac1a1af83e2a611a85fa0650216b7b726d0813c49cb4b9"
+  },
+  "id": "Cv7L66AFOfSezwJBHmwP6",
+  "tags": []
+}

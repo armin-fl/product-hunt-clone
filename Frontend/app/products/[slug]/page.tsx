@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 
 import { RatingStars } from "@/components/rating-stars";
-import { UpvoteButton } from "@/components/upvote-button";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getProductBySlug } from "@/lib/api";
@@ -56,7 +55,9 @@ export default async function ProductDetailPage({
                 </a>
               </Button>
             ) : null}
-            <UpvoteButton initialVotes={product.votes_count} />
+            <div className="rounded-full bg-secondary px-4 py-2 text-sm font-semibold text-secondary-foreground">
+              Product Hunt votes {product.votes_count}
+            </div>
           </div>
         </div>
       </section>

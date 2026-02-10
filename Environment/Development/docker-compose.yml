@@ -3,12 +3,13 @@ services:
     build:
       context: ../../backend/database
     image: ph-postgres:18.1-alpine
+    container_name: ph-postgres-dev
     restart: unless-stopped
     env_file: ./dev.env
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ../../backend/database/data:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
@@ -19,12 +20,13 @@ services:
     build:
       context: ../../backend/n8n
     image: ph-n8n:2.4.7
+    container_name: ph-n8n-dev
     restart: unless-stopped
     env_file: ./dev.env
     ports:
       - "5678:5678"
     volumes:
-      - n8n_data:/home/node/.n8n
+      - ../../backend/n8n/data:/home/node/.n8n
     depends_on:
       postgres:
         condition: service_healthy
@@ -33,6 +35,7 @@ services:
     build:
       context: ../../backend/django
     image: ph-django:0.1
+    container_name: ph-django-dev
     restart: unless-stopped
     env_file: ./dev.env
     environment:
@@ -46,7 +49,3 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-
-volumes:
-  postgres_data:
-  n8n_data:

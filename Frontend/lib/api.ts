@@ -2,13 +2,7 @@ import { Product } from "./types";
 
 const SERVER_API_BASE_URL = process.env.API_BASE_URL ?? "http://localhost:8000";
 
-type ProductFilters = {
-  min_votes?: number | string;
-  max_votes?: number | string;
-  min_rating?: number | string;
-  max_rating?: number | string;
-  search?: string;
-  ordering?: string;
+type ProductsPageOptions = {
   page?: number | string;
 };
 
@@ -23,35 +17,46 @@ function logApiError(message: string, error: unknown) {
   console.error(`[products] ${message}`, error);
 }
 
-function buildParams(filters: ProductFilters) {
-  const params = new URLSearchParams();
-  Object.entries(filters).forEach(([key, value]) => {
-    if (value !== undefined && value !== null && String(value).length > 0) {
-      params.set(key, String(value));
-    }
-  });
-  return params;
-}
-
 function getApiBaseUrl() {
   return typeof window === "undefined" ? SERVER_API_BASE_URL : "";
 }
 
-function buildProductsUrl(filters: ProductFilters) {
+function buildProductsUrl(options: ProductsPageOptions = {}) {
   const baseUrl = getApiBaseUrl();
-  const params = buildParams(filters);
+  const params = new URLSearchParams();
+  if (options.page !== undefined && options.page !== null && String(options.page).length > 0) {
+    params.set("page", String(options.page));
+  }
   const endpoint = `${baseUrl}/api/products/`;
   return params.toString() ? `${endpoint}?${params}` : endpoint;
 }
 
-export async function getProducts(filters: ProductFilters = {}): Promise<Product[]> {
-  const page = await getProductsPage(filters);
+export function getNextPageFromUrl(nextUrl: string | null): number | null {
+  if (!nextUrl) return null;
+  try {
+    const url = new URL(nextUrl, "http://localhost");
+    const pageParam = url.searchParams.get("page");
+    const page = pageParam ? Number(pageParam) : NaN;
+    return Number.isFinite(page) && page > 1 ? page : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function getProducts(options: ProductsPageOptions = {}): Promise<Product[]> {
+  const page = await getProductsPage(options);
   return page.results;
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | null> {
-  const results = await getProducts({ search: slug });
-  return results.find((item) => item.slug === slug) ?? null;
+  let nextPage: number | null = 1;
+  while (nextPage) {
+    const page = await getProductsPage({ page: nextPage });
+    const match = page.results.find((item) => item.slug === slug);
+    if (match) return match;
+    nextPage = getNextPageFromUrl(page.next);
+  }
+  return null;
 }
 
 function getFetchOptions() {
@@ -59,9 +64,9 @@ function getFetchOptions() {
 }
 
 export async function getProductsPage(
-  filters: ProductFilters = {}
+  options: ProductsPageOptions = {}
 ): Promise<PaginatedResponse<Product>> {
-  const url = buildProductsUrl(filters);
+  const url = buildProductsUrl(options);
 
   try {
     const res = await fetch(url, getFetchOptions());

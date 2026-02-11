@@ -6,7 +6,7 @@ import { getProducts } from "@/lib/api";
 import { groupByFeaturedDay } from "@/lib/format";
 
 export default async function HomePage() {
-  const products = await getProducts({ ordering: "-featured_at" });
+  const products = await getProducts();
   const groups = groupByFeaturedDay(products);
 
   return (

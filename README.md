@@ -33,19 +33,9 @@ python manage.py runserver 0.0.0.0:8000
 ```
 
 ### Endpoints
-- `GET /api/products/` list products (filter/search/order)
+- `GET /api/products/` list products (paginated)
 - `GET /api/products/{id}/` product detail
 - `POST /api/ingest/producthunt/` ingest Product Hunt JSON
-
-### Filters (examples)
-- `?min_votes=100&max_votes=500`
-- `?created_after=2026-02-01T00:00:00Z&created_before=2026-02-05T00:00:00Z`
-- `?featured_after=2026-02-01T00:00:00Z`
-- `?maker_username=someuser`
-- `?media_type=image`
-- `?has_reviews=true`
-- `?ordering=-votes_count`
-- `?search=atoms`
 
 ## Clerk Auth
 Set Clerk keys in `Environment/Development/dev.env` or `backend/django/.env.example`:

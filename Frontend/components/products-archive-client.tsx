@@ -1,43 +1,21 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { ProductCard } from "@/components/product-card";
-import { getProductsPage } from "@/lib/api";
+import { getNextPageFromUrl, getProductsPage } from "@/lib/api";
 import { Product } from "@/lib/types";
-
-type ProductFilters = {
-  min_votes?: string;
-  max_votes?: string;
-  min_rating?: string;
-  search?: string;
-  ordering?: string;
-};
 
 type ProductsArchiveClientProps = {
   initialProducts: Product[];
   initialCount: number;
   initialNextPage: number | null;
-  filters: ProductFilters;
 };
-
-function getNextPage(nextUrl: string | null): number | null {
-  if (!nextUrl) return null;
-  try {
-    const url = new URL(nextUrl);
-    const pageParam = url.searchParams.get("page");
-    const page = pageParam ? Number(pageParam) : NaN;
-    return Number.isFinite(page) && page > 1 ? page : null;
-  } catch {
-    return null;
-  }
-}
 
 export function ProductsArchiveClient({
   initialProducts,
   initialCount,
-  initialNextPage,
-  filters
+  initialNextPage
 }: ProductsArchiveClientProps) {
   const [items, setItems] = useState<Product[]>(initialProducts);
   const [totalCount, setTotalCount] = useState(initialCount);
@@ -45,8 +23,6 @@ export function ProductsArchiveClient({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
-
-  const activeFilters = useMemo(() => ({ ...filters }), [filters]);
 
   useEffect(() => {
     setItems(initialProducts);
@@ -60,16 +36,16 @@ export function ProductsArchiveClient({
     setLoading(true);
     setError(null);
     try {
-      const page = await getProductsPage({ ...activeFilters, page: nextPage });
+      const page = await getProductsPage({ page: nextPage });
       setItems((prev) => [...prev, ...page.results]);
       setTotalCount(page.count || totalCount);
-      setNextPage(getNextPage(page.next));
+      setNextPage(getNextPageFromUrl(page.next));
     } catch {
       setError("Could not load more products.");
     } finally {
       setLoading(false);
     }
-  }, [activeFilters, loading, nextPage, totalCount]);
+  }, [loading, nextPage, totalCount]);
 
   useEffect(() => {
     if (!nextPage) return;
@@ -103,7 +79,7 @@ export function ProductsArchiveClient({
           ))}
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">No products match these filters yet.</p>
+        <p className="text-sm text-muted-foreground">No products yet.</p>
       )}
 
       {error ? <p className="text-sm text-red-500">{error}</p> : null}

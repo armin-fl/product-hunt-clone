@@ -3,7 +3,6 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from clerk_auth.authentication import ClerkJWTAuthentication
-from .filters import ProductFilter
 from .models import Product
 from .serializers import ProductIngestSerializer, ProductSerializer
 
@@ -12,12 +11,9 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = (
         Product.objects.all()
         .prefetch_related('media', 'makers', 'product_links')
+        .order_by('-featured_at', '-votes_count')
     )
     serializer_class = ProductSerializer
-    filterset_class = ProductFilter
-    search_fields = ('name', 'tagline', 'description', 'slug')
-    ordering_fields = ('votes_count', 'created_at', 'featured_at', 'reviews_rating', 'reviews_count')
-    ordering = ('-featured_at', '-votes_count')
 
 
 class ProductIngestAPIView(APIView):

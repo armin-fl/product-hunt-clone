@@ -7,7 +7,10 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const backendUrl = new URL("/api/products/", API_BASE_URL);
-  backendUrl.search = searchParams.toString();
+  const page = searchParams.get("page");
+  if (page) {
+    backendUrl.searchParams.set("page", page);
+  }
 
   try {
     const res = await fetch(backendUrl.toString(), {

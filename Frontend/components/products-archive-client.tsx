@@ -6,6 +6,29 @@ import { ProductCard } from "@/components/product-card";
 import { getNextPageFromUrl, getProductsPage } from "@/lib/api";
 import { Product } from "@/lib/types";
 
+function uniqueProducts(products: Product[]) {
+  const seen = new Set<string>();
+  const unique: Product[] = [];
+  for (const product of products) {
+    if (seen.has(product.ph_id)) continue;
+    seen.add(product.ph_id);
+    unique.push(product);
+  }
+  return unique;
+}
+
+function mergeUniqueProducts(existing: Product[], incoming: Product[]) {
+  if (!incoming.length) return existing;
+  const seen = new Set(existing.map((product) => product.ph_id));
+  const merged = [...existing];
+  for (const product of incoming) {
+    if (seen.has(product.ph_id)) continue;
+    seen.add(product.ph_id);
+    merged.push(product);
+  }
+  return merged;
+}
+
 type ProductsArchiveClientProps = {
   initialProducts: Product[];
   initialCount: number;
@@ -17,35 +40,38 @@ export function ProductsArchiveClient({
   initialCount,
   initialNextPage
 }: ProductsArchiveClientProps) {
-  const [items, setItems] = useState<Product[]>(initialProducts);
+  const [items, setItems] = useState<Product[]>(() => uniqueProducts(initialProducts));
   const [totalCount, setTotalCount] = useState(initialCount);
   const [nextPage, setNextPage] = useState<number | null>(initialNextPage);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const loadingRef = useRef(false);
 
   useEffect(() => {
-    setItems(initialProducts);
+    setItems(uniqueProducts(initialProducts));
     setTotalCount(initialCount);
     setNextPage(initialNextPage);
     setError(null);
   }, [initialProducts, initialCount, initialNextPage]);
 
   const loadMore = useCallback(async () => {
-    if (!nextPage || loading) return;
+    if (!nextPage || loadingRef.current) return;
+    loadingRef.current = true;
     setLoading(true);
     setError(null);
     try {
       const page = await getProductsPage({ page: nextPage });
-      setItems((prev) => [...prev, ...page.results]);
+      setItems((prev) => mergeUniqueProducts(prev, page.results));
       setTotalCount(page.count || totalCount);
       setNextPage(getNextPageFromUrl(page.next));
     } catch {
       setError("Could not load more products.");
     } finally {
+      loadingRef.current = false;
       setLoading(false);
     }
-  }, [loading, nextPage, totalCount]);
+  }, [nextPage, totalCount]);
 
   useEffect(() => {
     if (!nextPage) return;

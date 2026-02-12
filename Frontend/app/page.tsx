@@ -1,9 +1,32 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 
 import { ProductCard } from "@/components/product-card";
 import { Button } from "@/components/ui/button";
 import { getProducts } from "@/lib/api";
 import { groupByFeaturedDay } from "@/lib/format";
+
+export const metadata: Metadata = {
+  title: "Product launches, curated daily",
+  description:
+    "Discover the products teams are shipping right now with PulseLaunch, a calm Product Hunt-inspired feed.",
+  alternates: {
+    canonical: "/"
+  },
+  openGraph: {
+    title: "PulseLaunch",
+    description:
+      "Discover the products teams are shipping right now with PulseLaunch, a calm Product Hunt-inspired feed.",
+    url: "/",
+    type: "website"
+  },
+  twitter: {
+    card: "summary",
+    title: "PulseLaunch",
+    description:
+      "Discover the products teams are shipping right now with PulseLaunch, a calm Product Hunt-inspired feed."
+  }
+};
 
 export default async function HomePage() {
   const products = await getProducts();

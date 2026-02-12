@@ -1,5 +1,26 @@
+import type { Metadata } from "next";
+
 import { BlogCard } from "@/components/blog-card";
 import { getBlogPosts } from "@/lib/blog";
+
+export const metadata: Metadata = {
+  title: "Blog",
+  description: "Insights from the PulseLaunch launch desk on storytelling, strategy, and product discovery.",
+  alternates: {
+    canonical: "/blog"
+  },
+  openGraph: {
+    title: "PulseLaunch Blog",
+    description: "Insights from the PulseLaunch launch desk on storytelling, strategy, and product discovery.",
+    url: "/blog",
+    type: "website"
+  },
+  twitter: {
+    card: "summary",
+    title: "PulseLaunch Blog",
+    description: "Insights from the PulseLaunch launch desk on storytelling, strategy, and product discovery."
+  }
+};
 
 export default async function BlogPage() {
   const blogPosts = await getBlogPosts();

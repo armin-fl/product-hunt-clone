@@ -1,15 +1,58 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import type { Metadata } from "next";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getBlogPostBySlug } from "@/lib/blog";
 
+type BlogDetailPageProps = {
+  params: Promise<{ slug: string }>;
+};
+
+function buildDescription(summary?: string) {
+  const text = summary || "";
+  return text.length > 160 ? `${text.slice(0, 157)}...` : text;
+}
+
+export async function generateMetadata({
+  params
+}: BlogDetailPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const post = await getBlogPostBySlug(slug);
+  if (!post) {
+    return {
+      title: "Post not found",
+      robots: { index: false, follow: false }
+    };
+  }
+
+  const description = buildDescription(post.excerpt);
+
+  return {
+    title: post.title,
+    description,
+    alternates: {
+      canonical: `/blog/${post.slug}`
+    },
+    openGraph: {
+      title: post.title,
+      description,
+      url: `/blog/${post.slug}`,
+      type: "article",
+      publishedTime: post.published_at || undefined
+    },
+    twitter: {
+      card: "summary",
+      title: post.title,
+      description
+    }
+  };
+}
+
 export default async function BlogDetailPage({
   params
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+}: BlogDetailPageProps) {
   const { slug } = await params;
   const post = await getBlogPostBySlug(slug);
 
@@ -28,7 +71,7 @@ export default async function BlogDetailPage({
       <section className="glass rounded-3xl p-8 shadow-soft md:p-12">
         <p className="text-sm font-semibold uppercase tracking-[0.2em] text-muted-foreground">
           {dateLabel}
-          {post.read_time ? ` • ${post.read_time}` : ""}
+          {post.read_time ? ` - ${post.read_time}` : ""}
         </p>
         <h1 className="mt-3 text-3xl font-semibold md:text-4xl">{post.title}</h1>
         <p className="mt-3 text-base text-muted-foreground">{post.excerpt}</p>

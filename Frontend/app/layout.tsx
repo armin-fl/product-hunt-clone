@@ -21,8 +21,32 @@ const fontDisplay = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "PulseLaunch",
-  description: "A Product Hunt-inspired feed for modern product launches."
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  title: {
+    default: "PulseLaunch",
+    template: "%s | PulseLaunch"
+  },
+  description: "A Product Hunt-inspired feed for modern product launches.",
+  applicationName: "PulseLaunch",
+  alternates: {
+    canonical: "/"
+  },
+  openGraph: {
+    title: "PulseLaunch",
+    description: "A Product Hunt-inspired feed for modern product launches.",
+    url: "/",
+    siteName: "PulseLaunch",
+    type: "website"
+  },
+  twitter: {
+    card: "summary",
+    title: "PulseLaunch",
+    description: "A Product Hunt-inspired feed for modern product launches."
+  },
+  robots: {
+    index: true,
+    follow: true
+  }
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

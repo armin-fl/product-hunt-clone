@@ -1,17 +1,62 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import type { Metadata } from "next";
 
 import { RatingStars } from "@/components/rating-stars";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getProductBySlug } from "@/lib/api";
 
+type ProductDetailPageProps = {
+  params: Promise<{ slug: string }>;
+};
+
+function buildDescription(summary?: string, fallback?: string) {
+  const text = summary || fallback || "";
+  return text.length > 160 ? `${text.slice(0, 157)}...` : text;
+}
+
+export async function generateMetadata({
+  params
+}: ProductDetailPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const product = await getProductBySlug(slug);
+  if (!product) {
+    return {
+      title: "Product not found",
+      robots: { index: false, follow: false }
+    };
+  }
+
+  const description = buildDescription(product.tagline, product.description);
+  const imageUrl = product.thumbnail_url || undefined;
+
+  return {
+    title: product.name,
+    description,
+    alternates: {
+      canonical: `/products/${product.slug}`
+    },
+    openGraph: {
+      title: product.name,
+      description,
+      url: `/products/${product.slug}`,
+      type: "website",
+      images: imageUrl ? [{ url: imageUrl, alt: product.name }] : undefined
+    },
+    twitter: {
+      card: imageUrl ? "summary_large_image" : "summary",
+      title: product.name,
+      description,
+      images: imageUrl ? [imageUrl] : undefined
+    }
+  };
+}
+
 export default async function ProductDetailPage({
   params
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+}: ProductDetailPageProps) {
   const { slug } = await params;
   const product = await getProductBySlug(slug);
 

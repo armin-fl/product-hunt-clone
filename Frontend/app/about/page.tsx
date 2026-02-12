@@ -1,7 +1,30 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+
+export const metadata: Metadata = {
+  title: "About",
+  description:
+    "Learn how PulseLaunch curates a calmer, focused Product Hunt-style launch feed for builders and teams.",
+  alternates: {
+    canonical: "/about"
+  },
+  openGraph: {
+    title: "About PulseLaunch",
+    description:
+      "Learn how PulseLaunch curates a calmer, focused Product Hunt-style launch feed for builders and teams.",
+    url: "/about",
+    type: "website"
+  },
+  twitter: {
+    card: "summary",
+    title: "About PulseLaunch",
+    description:
+      "Learn how PulseLaunch curates a calmer, focused Product Hunt-style launch feed for builders and teams."
+  }
+};
 
 export default function AboutPage() {
   return (

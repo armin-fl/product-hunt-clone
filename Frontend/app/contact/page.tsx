@@ -1,7 +1,28 @@
+import type { Metadata } from "next";
+
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+
+export const metadata: Metadata = {
+  title: "Contact",
+  description: "Get in touch with the PulseLaunch team to feature a product or share feedback.",
+  alternates: {
+    canonical: "/contact"
+  },
+  openGraph: {
+    title: "Contact PulseLaunch",
+    description: "Get in touch with the PulseLaunch team to feature a product or share feedback.",
+    url: "/contact",
+    type: "website"
+  },
+  twitter: {
+    card: "summary",
+    title: "Contact PulseLaunch",
+    description: "Get in touch with the PulseLaunch team to feature a product or share feedback."
+  }
+};
 
 export default function ContactPage() {
   return (

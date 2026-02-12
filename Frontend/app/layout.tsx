@@ -5,6 +5,7 @@ import { IBM_Plex_Sans, Space_Grotesk } from "next/font/google";
 
 import SiteFooter from "@/components/site-footer";
 import SiteHeader from "@/components/site-header";
+import { getSiteUrl } from "@/lib/site-url";
 import { ThemeProvider } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 
@@ -21,7 +22,7 @@ const fontDisplay = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  metadataBase: getSiteUrl(),
   title: {
     default: "PulseLaunch",
     template: "%s | PulseLaunch"

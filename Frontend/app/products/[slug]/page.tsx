@@ -1,7 +1,8 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import type { Metadata } from "next";
+import type { Metadata, ResolvingMetadata } from "next";
+import { cache } from "react";
 
 import { RatingStars } from "@/components/rating-stars";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,11 @@ type ProductDetailPageProps = {
   params: Promise<{ slug: string }>;
 };
 
+const getCachedProductBySlug = cache(async (slug: string) => {
+  // Next.js 16 generateMetadata + page rendering can share this cached lookup.
+  return getProductBySlug(slug);
+});
+
 function buildDescription(summary?: string, fallback?: string) {
   const text = summary || fallback || "";
   return text.length > 160 ? `${text.slice(0, 157)}...` : text;
@@ -19,9 +25,9 @@ function buildDescription(summary?: string, fallback?: string) {
 
 export async function generateMetadata({
   params
-}: ProductDetailPageProps): Promise<Metadata> {
+}: ProductDetailPageProps, parent: ResolvingMetadata): Promise<Metadata> {
   const { slug } = await params;
-  const product = await getProductBySlug(slug);
+  const product = await getCachedProductBySlug(slug);
   if (!product) {
     return {
       title: "Product not found",
@@ -29,8 +35,12 @@ export async function generateMetadata({
     };
   }
 
+  const previousImages = (await parent).openGraph?.images ?? [];
   const description = buildDescription(product.tagline, product.description);
   const imageUrl = product.thumbnail_url || undefined;
+  const imageEntries = imageUrl
+    ? [{ url: imageUrl, alt: product.name }, ...previousImages]
+    : previousImages;
 
   return {
     title: product.name,
@@ -43,7 +53,7 @@ export async function generateMetadata({
       description,
       url: `/products/${product.slug}`,
       type: "website",
-      images: imageUrl ? [{ url: imageUrl, alt: product.name }] : undefined
+      images: imageEntries
     },
     twitter: {
       card: imageUrl ? "summary_large_image" : "summary",
@@ -58,7 +68,7 @@ export default async function ProductDetailPage({
   params
 }: ProductDetailPageProps) {
   const { slug } = await params;
-  const product = await getProductBySlug(slug);
+  const product = await getCachedProductBySlug(slug);
 
   if (!product) {
     notFound();
@@ -71,12 +81,12 @@ export default async function ProductDetailPage({
           <div className="flex items-center gap-5">
             <div className="relative h-20 w-20 overflow-hidden rounded-3xl border border-border bg-muted">
               {product.thumbnail_url ? (
+                // Performance: use Next.js image optimization for remote product thumbnails.
                 <Image
                   src={product.thumbnail_url}
                   alt={product.name}
                   fill
                   sizes="80px"
-                  unoptimized
                   className="object-cover"
                 />
               ) : null}

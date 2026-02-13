@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 
 const API_BASE_URL = process.env.API_BASE_URL ?? "http://localhost:8000";
-
-export const dynamic = "force-dynamic";
+const PRODUCT_REVALIDATE_SECONDS = 60;
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -17,14 +16,17 @@ export async function GET(request: Request) {
       headers: {
         accept: "application/json"
       },
-      cache: "no-store"
+      // Next.js 16 caching: revalidate proxy responses instead of forcing per-request origin hits.
+      next: { revalidate: PRODUCT_REVALIDATE_SECONDS, tags: ["products"] }
     });
     const body = await res.text();
     const contentType = res.headers.get("content-type") ?? "application/json";
     return new NextResponse(body, {
       status: res.status,
       headers: {
-        "content-type": contentType
+        "content-type": contentType,
+        // Performance: expose edge cache hints for repeated product archive requests.
+        "cache-control": `public, s-maxage=${PRODUCT_REVALIDATE_SECONDS}, stale-while-revalidate=300`
       }
     });
   } catch (error) {

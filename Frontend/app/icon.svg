@@ -1,0 +1,14 @@
+<!-- Next.js app icon used by metadata routes and the web app manifest. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="pulseGradient" x1="20%" y1="20%" x2="80%" y2="90%">
+      <stop offset="0%" stop-color="#fb923c" />
+      <stop offset="100%" stop-color="#f97316" />
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="#0f172a" />
+  <path
+    d="M64 22C49 37 43 51 43 64c0 19 14 33 33 33 17 0 30-12 30-29 0-13-8-24-19-30 3 9-2 17-12 20 2-9-2-20-11-27z"
+    fill="url(#pulseGradient)"
+  />
+</svg>

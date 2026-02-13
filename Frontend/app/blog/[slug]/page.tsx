@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import type { Metadata } from "next";
+import type { Metadata, ResolvingMetadata } from "next";
+import { cache } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -10,6 +11,11 @@ type BlogDetailPageProps = {
   params: Promise<{ slug: string }>;
 };
 
+const getCachedBlogPostBySlug = cache(async (slug: string) => {
+  // Next.js 16 generateMetadata + page rendering can share this cached lookup.
+  return getBlogPostBySlug(slug);
+});
+
 function buildDescription(summary?: string) {
   const text = summary || "";
   return text.length > 160 ? `${text.slice(0, 157)}...` : text;
@@ -17,9 +23,9 @@ function buildDescription(summary?: string) {
 
 export async function generateMetadata({
   params
-}: BlogDetailPageProps): Promise<Metadata> {
+}: BlogDetailPageProps, parent: ResolvingMetadata): Promise<Metadata> {
   const { slug } = await params;
-  const post = await getBlogPostBySlug(slug);
+  const post = await getCachedBlogPostBySlug(slug);
   if (!post) {
     return {
       title: "Post not found",
@@ -27,6 +33,7 @@ export async function generateMetadata({
     };
   }
 
+  const previousImages = (await parent).openGraph?.images ?? [];
   const description = buildDescription(post.excerpt);
 
   return {
@@ -40,7 +47,8 @@ export async function generateMetadata({
       description,
       url: `/blog/${post.slug}`,
       type: "article",
-      publishedTime: post.published_at || undefined
+      publishedTime: post.published_at || undefined,
+      images: previousImages
     },
     twitter: {
       card: "summary",
@@ -54,7 +62,7 @@ export default async function BlogDetailPage({
   params
 }: BlogDetailPageProps) {
   const { slug } = await params;
-  const post = await getBlogPostBySlug(slug);
+  const post = await getCachedBlogPostBySlug(slug);
 
   if (!post) {
     notFound();

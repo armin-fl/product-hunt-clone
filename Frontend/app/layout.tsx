@@ -6,6 +6,7 @@ import { IBM_Plex_Sans, Space_Grotesk } from "next/font/google";
 import SiteFooter from "@/components/site-footer";
 import SiteHeader from "@/components/site-header";
 import { ThemeProvider } from "@/components/theme-provider";
+import { SITE_DESCRIPTION, SITE_NAME, getSiteUrl } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
 const fontBody = IBM_Plex_Sans({
@@ -21,31 +22,45 @@ const fontDisplay = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
+  // Next.js 16 metadata best practice: always provide a valid absolute base URL.
+  metadataBase: getSiteUrl(),
   title: {
-    default: "PulseLaunch",
+    default: SITE_NAME,
     template: "%s | PulseLaunch"
   },
-  description: "A Product Hunt-inspired feed for modern product launches.",
-  applicationName: "PulseLaunch",
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  manifest: "/manifest.webmanifest",
+  keywords: ["product launches", "startup discovery", "maker tools", "PulseLaunch"],
+  creator: SITE_NAME,
+  publisher: SITE_NAME,
   alternates: {
     canonical: "/"
   },
   openGraph: {
-    title: "PulseLaunch",
-    description: "A Product Hunt-inspired feed for modern product launches.",
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION,
     url: "/",
-    siteName: "PulseLaunch",
-    type: "website"
+    siteName: SITE_NAME,
+    type: "website",
+    locale: "en_US"
   },
   twitter: {
-    card: "summary",
-    title: "PulseLaunch",
-    description: "A Product Hunt-inspired feed for modern product launches."
+    card: "summary_large_image",
+    title: SITE_NAME,
+    description: SITE_DESCRIPTION
   },
   robots: {
     index: true,
-    follow: true
+    follow: true,
+    // Next.js 16 robots metadata supports detailed Googlebot directives.
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1
+    }
   }
 };
 

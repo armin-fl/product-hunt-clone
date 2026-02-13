@@ -12,18 +12,23 @@ export function ProductCard({ product }: { product: Product }) {
       <div className="flex items-start gap-4">
         <div className="relative h-14 w-14 overflow-hidden rounded-2xl border border-border bg-muted">
           {product.thumbnail_url ? (
+            // Performance: keep list thumbnails on the Next.js image optimization pipeline.
             <Image
               src={product.thumbnail_url}
               alt={product.name}
               fill
               sizes="56px"
-              unoptimized
               className="object-cover"
             />
           ) : null}
         </div>
         <div className="flex-1">
-          <Link href={`/products/${product.slug}`} className="text-base font-semibold hover:text-primary">
+          {/* Performance: avoid prefetching every detail page in long product grids. */}
+          <Link
+            href={`/products/${product.slug}`}
+            prefetch={false}
+            className="text-base font-semibold hover:text-primary"
+          >
             {product.name}
           </Link>
           <p className="mt-1 text-sm text-muted-foreground line-clamp-2">{product.tagline}</p>

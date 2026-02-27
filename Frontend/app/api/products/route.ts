@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
+import { requireServerEnv, requireServerIntEnv } from "@/lib/server-env";
 
-const API_BASE_URL = process.env.API_BASE_URL ?? "http://localhost:8000";
-const PRODUCT_REVALIDATE_SECONDS = 60;
+const API_BASE_URL = requireServerEnv("API_BASE_URL");
+const PRODUCT_REVALIDATE_SECONDS = requireServerIntEnv("PRODUCT_REVALIDATE_SECONDS");
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);

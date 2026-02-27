@@ -6,15 +6,9 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { ensureCsrfCookie } from "@/lib/auth-client";
+import { SessionUser } from "@/lib/session-user";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
-
-type SessionUser = {
-  id: number;
-  username: string;
-  email: string;
-  is_staff: boolean;
-};
 
 const navItems = [
   { href: "/", label: "Home" },

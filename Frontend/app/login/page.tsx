@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { ensureCsrfCookie } from "@/lib/auth-client";
@@ -88,8 +89,16 @@ export default function LoginPage() {
           {pending ? "Logging in..." : "Login"}
         </Button>
       </form>
+      <div className="space-y-2">
+        <Button type="button" variant="outline" className="w-full" asChild>
+          <Link href="/api/auth/social/google">Continue with Google</Link>
+        </Button>
+        <Button type="button" variant="outline" className="w-full" asChild>
+          <Link href="/api/auth/social/github">Continue with GitHub</Link>
+        </Button>
+      </div>
       <p className="text-sm text-muted-foreground">
-        Need an account? Create one from Django admin first.
+        Need an account? Create one from <Link href="/api/auth/signup" className="underline">Django signup</Link>.
       </p>
     </section>
   );

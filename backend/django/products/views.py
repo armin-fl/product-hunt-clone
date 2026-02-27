@@ -28,7 +28,7 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ProductIngestAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAdminUser]
 
     def post(self, request):
         serializer = ProductIngestSerializer(

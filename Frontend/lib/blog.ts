@@ -1,7 +1,15 @@
-const API_BASE_URL = process.env.API_BASE_URL ?? "http://localhost:8000";
+const API_BASE_URL = process.env.API_BASE_URL?.trim() ?? "";
 const BLOG_ENDPOINT = `${API_BASE_URL}/api/blog-posts/`;
-const BLOG_REVALIDATE_SECONDS = 120;
+const BLOG_REVALIDATE_SECONDS = Number(process.env.BLOG_REVALIDATE_SECONDS ?? "");
 const BLOG_CACHE_TAG = "blog-posts";
+
+if (!API_BASE_URL) {
+  throw new Error("Missing required environment variable: API_BASE_URL");
+}
+
+if (!Number.isFinite(BLOG_REVALIDATE_SECONDS) || BLOG_REVALIDATE_SECONDS < 0) {
+  throw new Error("Environment variable BLOG_REVALIDATE_SECONDS must be a non-negative number.");
+}
 
 export type BlogPost = {
   slug: string;

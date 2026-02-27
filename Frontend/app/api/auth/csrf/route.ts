@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { applyNoStoreHeaders, buildProxyHeaders, getSetCookieHeaders } from "@/lib/auth-proxy";
+import { requireServerEnv } from "@/lib/server-env";
 
-const API_BASE_URL = process.env.API_BASE_URL ?? "http://localhost:8000";
+const API_BASE_URL = requireServerEnv("API_BASE_URL");
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";

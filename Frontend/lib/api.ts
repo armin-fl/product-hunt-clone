@@ -1,8 +1,19 @@
 import { Product } from "./types";
 
-const SERVER_API_BASE_URL = process.env.API_BASE_URL ?? "http://localhost:8000";
-const PRODUCT_REVALIDATE_SECONDS = 60;
+const SERVER_API_BASE_URL = process.env.API_BASE_URL?.trim() ?? "";
+const PRODUCT_REVALIDATE_SECONDS = Number(process.env.PRODUCT_REVALIDATE_SECONDS ?? "");
 const PRODUCT_CACHE_TAG = "products";
+
+if (typeof window === "undefined" && !SERVER_API_BASE_URL) {
+  throw new Error("Missing required environment variable: API_BASE_URL");
+}
+
+if (
+  typeof window === "undefined" &&
+  (!Number.isFinite(PRODUCT_REVALIDATE_SECONDS) || PRODUCT_REVALIDATE_SECONDS < 0)
+) {
+  throw new Error("Environment variable PRODUCT_REVALIDATE_SECONDS must be a non-negative number.");
+}
 
 type ProductsPageOptions = {
   page?: number | string;

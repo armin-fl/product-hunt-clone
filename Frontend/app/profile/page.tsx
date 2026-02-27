@@ -2,13 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-
-type SessionUser = {
-  id: number;
-  username: string;
-  email: string;
-  is_staff: boolean;
-};
+import { SessionUser } from "@/lib/session-user";
 
 export default function ProfilePage() {
   const [user, setUser] = useState<SessionUser | null>(null);
@@ -72,7 +66,8 @@ export default function ProfilePage() {
       <p className="text-sm">User ID: {user.id}</p>
       <p className="text-sm">Username: {user.username}</p>
       <p className="text-sm">Email: {user.email || "No email set"}</p>
-      <p className="text-sm">Staff: {user.is_staff ? "Yes" : "No"}</p>
+      <p className="text-sm">Display name: {user.profile.display_name || "Not set"}</p>
+      <p className="text-sm">Location: {user.profile.location || "Not set"}</p>
     </section>
   );
 }

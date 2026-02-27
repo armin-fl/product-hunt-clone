@@ -17,12 +17,10 @@ env/
 staticfiles/
 media/
 
-# Env files (keep dev/prod env tracked)
+# Env files
 .env
 .env.*
 *.env
-!Environment/Development/dev.env
-!Environment/Production/prod.env
 
 # Tests / tooling
 .coverage

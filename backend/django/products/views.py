@@ -3,7 +3,6 @@ from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from clerk_auth.authentication import ClerkJWTAuthentication
 from .models import Product
 from .serializers import ProductIngestSerializer, ProductSerializer
 
@@ -29,7 +28,6 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class ProductIngestAPIView(APIView):
-    authentication_classes = [ClerkJWTAuthentication]
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request):

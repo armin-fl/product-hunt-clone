@@ -3,9 +3,16 @@ import os
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'dev-secret-key')
-
 DEBUG = os.environ.get('DJANGO_DEBUG', 'false').lower() in {'1', 'true', 'yes'}
+
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY")
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = "dev-secret-key"  # Dev-only fallback; never ship a known SECRET_KEY to production.
+    else:
+        raise RuntimeError(
+            "DJANGO_SECRET_KEY must be set when DJANGO_DEBUG is false (a predictable SECRET_KEY enables cookie/signature forgery)."
+        )
 
 raw_hosts = os.environ.get('DJANGO_ALLOWED_HOSTS', '')
 ALLOWED_HOSTS = [host.strip() for host in raw_hosts.split(',') if host.strip()]
@@ -20,6 +27,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'accounts',
     'blog',
     'products',
 ]
@@ -92,11 +100,15 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'clerk_auth.authentication.ClerkJWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ],
+    'DEFAULT_THROTTLE_RATES': {
+        'login': os.environ.get('DJANGO_AUTH_LOGIN_RATE', '10/minute'),
+        'login_username': os.environ.get('DJANGO_AUTH_LOGIN_USERNAME_RATE', '20/hour'),
+    },
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 25,
 }
@@ -104,3 +116,32 @@ REST_FRAMEWORK = {
 CSRF_TRUSTED_ORIGINS = [
     origin.strip() for origin in os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', '').split(',') if origin.strip()
 ]
+
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = os.environ.get('DJANGO_SESSION_COOKIE_SAMESITE', 'Lax')
+# Default to Secure cookies in production; insecure cookies leak sessions over HTTP.
+SESSION_COOKIE_SECURE = os.environ.get('DJANGO_SESSION_COOKIE_SECURE', str(not DEBUG)).lower() in {'1', 'true', 'yes'}
+# HttpOnly by default in production because our frontend fetches/forwards CSRF server-side (no JS cookie read needed).
+CSRF_COOKIE_HTTPONLY = os.environ.get('DJANGO_CSRF_COOKIE_HTTPONLY', str(not DEBUG)).lower() in {'1', 'true', 'yes'}
+CSRF_COOKIE_SAMESITE = os.environ.get('DJANGO_CSRF_COOKIE_SAMESITE', SESSION_COOKIE_SAMESITE)
+CSRF_COOKIE_SECURE = os.environ.get(
+    'DJANGO_CSRF_COOKIE_SECURE',
+    str(SESSION_COOKIE_SECURE),
+).lower() in {'1', 'true', 'yes'}
+
+
+
+SECURE_SSL_REDIRECT = True 
+
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+X_FRAME_OPTIONS = "DENY"
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"

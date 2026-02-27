@@ -14,7 +14,7 @@ docker compose up -d
 2. HTTP Request node: call Product Hunt API and return the JSON payload you showed.
 3. Optional: Set or Item Lists node to clean/shape fields.
 4. HTTP Request node: POST to `http://localhost:8000/api/ingest/producthunt/`.
-5. Add header `Authorization: Bearer <Clerk session token>` to the ingest request.
+5. Authenticate first via `POST /api/auth/login/` and include the returned `sessionid` cookie in ingest requests.
 
 ## Notes
 - n8n is configured to use Postgres in `docker-compose.yml`.
